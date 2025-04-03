@@ -1,0 +1,45 @@
+---
+title: "EPI 560: Lab 2"
+author: "Aileen Andrade-Torres"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  html_document:
+    df_print: paged
+    theme: cosmo
+    toc: yes
+---
+  
+## Screenshot of lab code
+
+![Screenshot 1](/Users/aileenandrade/Desktop/Spring/epi560lab/Andrade-Torres_A_epi560/build/Lab 2 screenshot .png)
+![Screenshot 2](/Users/aileenandrade/Desktop/Spring/epi560lab/Andrade-Torres_A_epi560/build/Lab 2 screenshot 2.png)
+![Screenshot 3](/Users/aileenandrade/Desktop/Spring/epi560lab/Andrade-Torres_A_epi560/build//Lab 2 screenshot 3.png)
+---
+
+```{r setup, echo=FALSE, message=FALSE, warning=FALSE}
+# Setup
+library(pacman)
+p_load("usethis", "gitcreds")
+rm(list=ls())
+
+#usethis::create_github_token()
+#gitcreds::gitcreds_set()
+
+# credentials already inputted into system. This step was skipped 
+
+
+# NOTE: Chat GPT was used to generate SSH on laptop and link key to github. 
+#Specifically, requested terminal commands to configure and check configuration 
+#was done correctly
+```
+
+
+
+
+
+\pagebreak  
+
+## Code Appendix  
+ 
+```{r, ref.label=knitr::all_labels(),echo=TRUE,eval=FALSE} 
+```
