@@ -1,0 +1,123 @@
+---
+title: "EPI 560: Lab 3"
+author: "Aileen Andrade-Torres"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: 
+    html_document:
+        df_print: paged
+        theme: cosmo
+        toc: yes
+knit: (function(inputFile, encoding) {
+  rmarkdown::render(inputFile, encoding = encoding, output_dir = "build") })
+---
+
+# Markdown Formatting Overview 
+
+## Headers
+# Level 1  
+## Level 2  
+### Level 3  
+#### Level 4  
+##### Level 5  
+###### Level 6
+
+## Lists
+* Ordered Lists
+  + *For ordered lists you will need to insert a numbered list into your markdown such as \"1. First item, 2. Second item".*
++ Unordered Lists
+    + *For unordered lists you will need to insert a \'-' in front of item names, such as \"- First item, - Second item".*
++ Task Lists
+  + *Task lists include check boxes to track your tasks. You will need to insert a \'- \[ ]' in front of item names, such as \"- \[ ] First item, \-\[ ] Second item".*
+      + - [ ] **Complete lab**
+
+
+## Text Formats
+* **BOLD**
++ *Italic*
++ Superscript^2^ and Beta~0~
++ logit\(p) = $\alpha$~0~ \+ $\beta$~1~Age
++ `myvar`
+
+## Embedding images
+
+![Markdown image](/Users/aileenandrade/Desktop/Personal/cats.jpeg)
+
+## Code Chunks
+
+```{r libraries, echo=FALSE, message=FALSE, warning=FALSE}
+#### libraries 
+library(ggplot2)
+library(tidyverse)
+library(dplyr)
+library(knitr)
+```
+
+  
+```{r dataframe, echo=FALSE, message=FALSE, warning=FALSE}
+set.seed(123)
+
+##set number of row 
+n <- 20
+
+#create exposure
+exposure <- sample(c(TRUE, FALSE), size = n, replace = TRUE, prob = c(0.4, 0.6))
+
+#create outcome
+outcome <- sample(c(TRUE, FALSE), size = n, replace = TRUE, prob = c(0.7, 0.3))
+
+#create confounder based on exposure status
+confounder <- ifelse(
+  exposure,
+  rnorm(sum(exposure), mean = 5, sd = 2),
+  rnorm(sum(!exposure), mean = 8, sd = 2)
+)
+
+#combine into a dataframe
+df <- data.frame(exposure, outcome, confounder)
+
+#view entire dataframe
+print(df)
+
+# print only frist 5 row using kable
+kable(head(df, 5))
+
+#2x2 table
+table(df$exposure, df$outcome)
+
+#histogram of confounder
+myhist1 <- ggplot(df, aes(x = confounder)) +
+  geom_histogram(bins = 10, fill = "steelblue") +
+  labs(title = "Histogram of Confounder",
+       x = "Confounder",
+       y = "Count") +
+  theme_minimal()
+
+myhist1 #print plot
+
+#histogram by of confounder stratified by exposure using ggplot2
+myhist2 <- ggplot(df, aes(x = confounder, fill = exposure)) +
+  geom_histogram(position = "identity", alpha = 0.6, bins = 10) +
+  scale_fill_manual(values = c("steelblue", "orange")) + 
+  labs(title = "Confounder by Exposure Status",
+       x = "Confounder",
+       y = "Count") +
+  theme_minimal()
+
+myhist2 #print plot
+
+
+```
+
+
+## Inline Code
+
+For the `confounder` variable the mean is `r mean(confounder)`.
+
+
+
+\pagebreak  
+
+## Code Appendix  
+ 
+```{r, ref.label=knitr::all_labels(),echo=TRUE,eval=FALSE} 
+```
