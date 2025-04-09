@@ -1,0 +1,36 @@
+---
+title: "EPI 560 Final Project Slides"
+author: "Aileen Andrade-Torres"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: beamer_presentation
+   
+knit: (function(inputFile, encoding) {
+  rmarkdown::render(inputFile, encoding = encoding, output_dir = "build") })
+---
+## Table of Contents
+
+1. Introduction
+2. Next slide
+3. Next slide
+
+---
+
+## About me
+
+* Born and raised in Los Angeles, CA to immigrant parents  
+* Became a Licensed Vocational Nurse in 2013  
+* B.S. Health Education and Minor in Women’s Health Issues from SF State (First gen.)  
+* Worked at UCSF 2019–2023 with PRHE  
+* Research interests = environmental impacts on child health outcomes  
+
+### Fun facts:
+* Mother to two kitties  
+* Bibliophile
+
+```{r math, echo=FALSE}
+2+2
+```
+
+![Mini me](aileen.jpeg){width=50%}
+---
+
