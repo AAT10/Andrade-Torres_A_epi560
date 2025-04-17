@@ -1,0 +1,108 @@
+---
+title: "Epi 560 Lab 6"
+author: "Aileen Andrade-Torres"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: 
+    html_document:
+        df_print: paged
+        theme: cosmo
+        toc: yes
+knit: (function(inputFile, encoding) {
+  rmarkdown::render(inputFile, encoding = encoding, output_dir = "build") })
+---
+
+```{r SQL connection, echo=FALSE}
+library(ggplot2)
+library(tidyverse)
+library(dplyr)
+library(knitr)
+library(DBI) #load package 
+
+
+#connect SQL
+db <- dbConnect(RSQLite::SQLite(), dbname = "/Users/aileenandrade/Desktop/Spring/epi560lab/Andrade-Torres_A_epi560/epi560.sqlite")
+
+
+#step 4 
+#dbDisconnect(db)
+
+
+```
+
+##Question 1
+
+```{r Q1, echo=FALSE}
+freq_table <- dbGetQuery(db, "
+  SELECT 
+    SLD012 AS SleepHours,
+    COUNT(*) AS NumberReporting
+  FROM P_SLQ
+  GROUP BY SLD012
+")
+freq_table
+
+kable(freq_table)
+```
+
+## Question 2
+
+```{r Q2, echo=FALSE}
+freq_table2 <- dbGetQuery(db, "
+  SELECT 
+    SLD012 AS SleepHours,
+    COUNT(*) AS NumberReporting
+  FROM P_SLQ
+   WHERE SleepHours >7.0
+  GROUP BY SLD012
+ 
+")
+freq_table2
+
+kable(freq_table2)
+```
+##Question 3
+
+```{r Q3, echo=FALSE}
+
+
+modal_row <- dbGetQuery(db, "
+  SELECT 
+    SLD012 AS SleepHours,
+    COUNT(*) AS NumberReporting
+  FROM P_SLQ
+  GROUP BY SLD012
+  ORDER BY NumberReporting DESC
+  LIMIT 1
+")
+modal_row
+
+
+kable(modal_row)
+
+#alternative using 'WITH'
+
+alt <- dbGetQuery(db, "WITH freq_table AS (
+SELECT 
+    SLD012 AS SleepHours,
+    COUNT(*) AS NumberReporting
+  FROM P_SLQ
+  GROUP BY SLD012) 
+SELECT *
+FROM freq_table
+ORDER BY NumberReporting DESC
+LIMIT 1
+")
+alt
+
+#end session
+
+dbDisconnect(db)
+```
+
+
+\pagebreak  
+
+## Code Appendix  
+ 
+```{r, ref.label=knitr::all_labels(),echo=TRUE,eval=FALSE} 
+```
