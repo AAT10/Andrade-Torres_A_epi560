@@ -1,0 +1,268 @@
+---
+title: "Epi 560 Lab 7"
+author: "Aileen Andrade-Torres"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: 
+    html_document:
+        df_print: paged
+        theme: cosmo
+        toc: yes
+knit: (function(inputFile, encoding) {
+  rmarkdown::render(inputFile, encoding = encoding, output_dir = "build") })
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+#installing rhdf5
+#if (!require("BiocManager", quietly = TRUE))
+#install.packages("BiocManager")
+#BiocManager::install("rhdf5")
+
+#installing arrow
+#install.packages("arrow", repos = c("https://apache.r-universe.dev"))
+
+
+library(rhdf5)
+library(arrow)
+library(ggplot2)
+library(tidyverse)
+library(dplyr)
+library(haven)
+library(openxlsx)
+
+setwd("/Users/aileenandrade/Desktop/Spring/epi560lab/Andrade-Torres_A_epi560")
+```
+
+
+#CSV FILE
+
+```{r csv, echo=FALSE}
+
+#CSV
+
+before1 <- Sys.time()
+
+df1 <- read.csv("P_DEMO.csv")
+
+after1 <- Sys.time()
+
+elapsed_time1 <-after1-before1
+
+print(elapsed_time1)
+
+#View(df1)
+
+# Plot
+df1_plot <-ggplot(df1, aes(x = WTMECPRP, y = WTINTPRP)) +
+  geom_point(color = "steelblue", alpha = 0.6) +
+  labs(
+    title = "WTINTPRP vs WTMECPRP",
+    x = "WTMECPRP",
+    y = "WTINTPRP"
+  ) +
+  theme_minimal()
+
+df1_plot
+
+```
+
+#DTA FILE
+```{r dta, echo=FALSE}
+
+before2 <- Sys.time()
+
+df2 <- read_dta("P_DEMO.dta")
+
+after2 <- Sys.time()
+
+elapsed_time2 <-after2-before2
+
+print(elapsed_time2)
+
+#plot
+df2_plot <-ggplot(df2, aes(x = WTMECPRP, y = WTINTPRP)) +
+  geom_point(color = "steelblue", alpha = 0.6) +
+  labs(
+    title = "WTINTPRP vs WTMECPRP",
+    x = "WTMECPRP",
+    y = "WTINTPRP"
+  ) +
+  theme_minimal()
+
+df2_plot
+
+```
+
+#FEATHER FILE
+
+```{r feather, echo=FALSE}
+
+before3 <- Sys.time()
+
+df3 <- read_feather("P_DEMO.feather")
+
+after3 <- Sys.time()
+
+elapsed_time3 <-after3-before3
+
+print(elapsed_time3)
+
+#plot
+df3_plot <-ggplot(df3, aes(x = WTMECPRP, y = WTINTPRP)) +
+  geom_point(color = "steelblue", alpha = 0.6) +
+  labs(
+    title = "WTINTPRP vs WTMECPRP",
+    x = "WTMECPRP",
+    y = "WTINTPRP"
+  ) +
+  theme_minimal()
+
+df3_plot
+
+```
+#HDF5 FILE
+
+```{r hdf5, echo=FALSE}
+
+#inspect
+h5ls("/Users/aileenandrade/Desktop/Spring/epi560lab/Andrade-Torres_A_epi560/P_DEMO.hdf5", all = TRUE)
+
+before4 <- Sys.time()
+
+df4 <- h5read("/Users/aileenandrade/Desktop/Spring/epi560lab/Andrade-Torres_A_epi560/P_DEMO.hdf5", "/P_DEMO")
+
+after4 <- Sys.time()
+
+elapsed_time4 <-after4-before4
+
+print(elapsed_time4)
+
+#plot
+df4_plot <-ggplot(df4, aes(x = WTMECPRP, y = WTINTPRP)) +
+  geom_point(color = "steelblue", alpha = 0.6) +
+  labs(
+    title = "WTINTPRP vs WTMECPRP",
+    x = "WTMECPRP",
+    y = "WTINTPRP"
+  ) +
+  theme_minimal()
+
+df4_plot
+
+
+##NOTE: CHATGPT WAS USED TO DETERMINE FUNCTION USED TO READ IN AND INSPECT THIS HDF5 FILE
+```
+
+#PARQUET FILE
+
+```{r parquette, echo=FALSE}
+before5 <- Sys.time()
+
+df5 <- read_parquet("P_DEMO.parquet")
+
+after5 <- Sys.time()
+
+elapsed_time5 <-after5-before5
+
+print(elapsed_time5)
+
+#plot
+df5_plot <-ggplot(df5, aes(x = WTMECPRP, y = WTINTPRP)) +
+  geom_point(color = "steelblue", alpha = 0.6) +
+  labs(
+    title = "WTINTPRP vs WTMECPRP",
+    x = "WTMECPRP",
+    y = "WTINTPRP"
+  ) +
+  theme_minimal()
+
+df5_plot
+```
+#RDATA FILE
+
+```{r RData, echo=FALSE}
+before6 <- Sys.time()
+
+#load rdata file
+load("P_DEMO.RData")
+
+#assign df a new name 
+df6 <- data_file
+
+after6 <- Sys.time()
+
+elapsed_time6 <-after6-before6
+
+print(elapsed_time6)
+
+#plot
+df6_plot <-ggplot(df6, aes(x = WTMECPRP, y = WTINTPRP)) +
+  geom_point(color = "steelblue", alpha = 0.6) +
+  labs(
+    title = "WTINTPRP vs WTMECPRP",
+    x = "WTMECPRP",
+    y = "WTINTPRP"
+  ) +
+  theme_minimal()
+
+df6_plot
+```
+#XLSX FILE
+```{r XLSX, echo=FALSE}
+before7 <- Sys.time()
+
+df7 <- read.xlsx("P_DEMO.xlsx")
+
+after7 <- Sys.time()
+
+elapsed_time7 <-after7-before7
+
+print(elapsed_time7)
+
+#plot
+df7_plot <-ggplot(df7, aes(x = WTMECPRP, y = WTINTPRP)) +
+  geom_point(color = "steelblue", alpha = 0.6) +
+  labs(
+    title = "WTINTPRP vs WTMECPRP",
+    x = "WTMECPRP",
+    y = "WTINTPRP"
+  ) +
+  theme_minimal()
+
+df7_plot
+
+
+##NOTE: CHAT GPT WAS USED TO TROUBLE SHOOT ERROR MESSAGE WHEN TRYING TO LOAD 
+#READXL PACKAGE. PACKAGE DID NOT WORK FOR ME. VERSION OF R WAS UP TO DATE. TRIED
+# TO UNINSTALL AND INSTALL PACKAGE, BUT YIELDED NO RESULT. OPENXLSX PACKAGE
+#WAS USED INSTEAD
+```
+
+
+#QUESTION RESPONSES
+
+
+
+```{r question responses}
+
+#1) all files uploaded 15,560 observation in the data frame. Uploading various 
+# formats required different methods. In particular, the RData and hdf5 files 
+# required two steps to upload files. Some required different packages such as 
+# arrow, haven, rhdf5, and openxlsx. 
+
+
+#2) RData file had the fastest loading time at 0.01928186 secs. The slowest was 
+# the xlsx file at 0.5584049 secs. The difference between the two was a whopping 
+# 0.5391231 secs. 
+
+```
+
+
+
+\pagebreak  
+
+## Code Appendix  
+ 
+```{r, ref.label=knitr::all_labels(),echo=TRUE,eval=FALSE} 
+```
