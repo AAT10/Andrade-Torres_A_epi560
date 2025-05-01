@@ -1,0 +1,219 @@
+---
+title: "Lab_9"
+author: "Aileen Andrade-Torres"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: 
+    html_document:
+        df_print: paged
+        theme: cosmo
+        toc: yes
+knit: (function(inputFile, encoding) {
+  rmarkdown::render(inputFile, encoding = encoding, output_dir = "build") })
+---
+
+```{r setup, echo=FALSE, message=FALSE, warning=FALSE}
+# Setup
+library(pacman) 
+library(DBI)
+library(summarytools)
+library(ggplot2)
+p_load("tidyverse", "knitr")
+```         
+
+## Responses  
+### Question 2: I believe all of these variables could be important for the analysis. If a patient refused to answer or didn’t know, that suggests the missingness is not random. But if a value is simply marked as missing, we don’t know the reason behind it. I’d want a clearer understanding of what’s missing and why before determining how to handle it.
+
+
+```{r part_1, echo=FALSE, message=FALSE, warning=FALSE}                 
+# code for part 1
+## Question 1 - Reading om SQL data
+db <- dbConnect(RSQLite::SQLite(), dbname = "epi560.sqlite")
+audiometry <- dbGetQuery(db, "SELECT * from P_AUQ")
+sleep <- dbGetQuery(db, "SELECT * from P_SLQ")
+
+## Merging 
+data <- dbGetQuery(db, "SELECT * FROM P_SLQ LEFT JOIN P_AUQ ON
+                   P_SLQ.SEQN = P_AUQ.SEQN")
+#View(data)
+
+## Question 3 
+data_clean <- data
+
+### Frequency before cleaning
+freq(data_clean$SLQ300, cum = TRUE, total = TRUE, na.last = TRUE)
+freq(data_clean$SLQ310, cum = TRUE, total = TRUE, na.last = TRUE)
+
+### Recode refused, don't know, and missing
+#### SLQ300
+data_clean$SLQ300[data_clean$SLQ300 == "77777"] <- NA
+data_clean$SLQ300[data_clean$SLQ300 == "99999"] <- NA
+data_clean$SLQ300[data_clean$SLQ300 == ""] <- NA
+
+#### SLQ310
+data_clean$SLQ310[data_clean$SLQ310 == "77777"] <- NA
+data_clean$SLQ310[data_clean$SLQ310 == "99999"] <- NA
+data_clean$SLQ310[data_clean$SLQ310 == ""] <- NA
+
+###Frequency table after cleaning
+freq(data_clean$SLQ300, cum = TRUE, total = TRUE, na.last = TRUE)
+freq(data_clean$SLQ310, cum = TRUE, total = TRUE, na.last = TRUE)
+
+## Question 4 - Cleaning more variables (SLQ300, SLQ310, SLQ320, SLQ330)
+### Variables to be cleaned
+var_clean <- c("SLQ300", "SLQ310", "SLQ320", "SLQ330")
+
+### How to clean those variables
+missing <- list(
+  SLQ300 = c("77777", "99999", ""),
+  SLQ310 = c("77777", "99999", ""),
+  SLQ320 = c("77777", "99999", ""),
+  SLQ330 = c("77777", "99999", "")
+)
+
+### Loop 
+for (var in var_clean) {
+  data_clean[[var]] <- as.character(data_clean[[var]])
+  data_clean[[var]][data_clean[[var]] %in% missing[[var]]] <- NA
+}
+
+### Frequency table of SLQ320
+freq(data_clean$SLQ320, cum = TRUE, total = TRUE, na.last = TRUE)
+
+```
+
+
+### Question 5: In the audiometry dataset, it’s important to assess how well the patient can hear, whether they have hearing loss, the severity of that loss, and possibly its cause. For sleep, knowing how much sleep the individual gets is key. Additional variables like medical conditions and demographic factors such as age may also be important, as they can influence both hearing loss and sleep patterns. 
+
+#*Question 6*
+```{r question 6, echo=FALSE, message=FALSE, warning=FALSE}
+
+#join tables
+data2 <- dbGetQuery(db, "
+  SELECT *
+  FROM P_SLQ
+  LEFT JOIN P_PAQ ON P_SLQ.SEQN = P_PAQ.SEQN
+  LEFT JOIN P_ALQ ON P_SLQ.SEQN = P_ALQ.SEQN
+  LEFT JOIN P_GHB ON P_SLQ.SEQN = P_GHB.SEQN
+  LEFT JOIN P_AUQ ON P_SLQ.SEQN = P_AUQ.SEQN
+")
+
+#create new data frame
+data_clean2 <- data2
+
+#cleaning specific variables
+
+##Sleep disorders- SLQ050 missingness
+data_clean2$SLQ050[data_clean2$SLQ050 == 7] <- NA
+data_clean2$SLQ050[data_clean2$SLQ050 == 9] <- NA
+data_clean2$SLQ050[data_clean2$SLQ050 == "."] <- NA
+
+##Physical activity- PAQ610 missingness
+data_clean2$PAQ610[data_clean2$PAQ610 == 77] <- NA
+data_clean2$PAQ610[data_clean2$PAQ610 == 99] <- NA
+data_clean2$PAQ610[data_clean2$PAQ610 == "."] <- NA
+
+##Alcohol use- ALQ121 missingness
+data_clean2$ALQ121[data_clean2$ALQ121 == 77] <- NA
+data_clean2$ALQ121[data_clean2$ALQ121 == 99] <- NA
+data_clean2$ALQ121[data_clean2$ALQ121 == "."] <- NA
+
+
+##Audiometry-AUQ054 missingness
+data_clean2$AUQ054[data_clean2$AUQ054 == 77] <- NA
+data_clean2$AUQ054[data_clean2$AUQ054 == 99] <- NA
+data_clean2$AUQ054[data_clean2$AUQ054 == "."] <- NA
+
+##Glycohemoglobin-LBXGH missingness
+data_clean2$LBXGH[data_clean2$LBXGH == "."] <- NA
+
+kable(head(data_clean2[, c("SLQ050", "PAQ610", "ALQ121", "AUQ054", "LBXGH")]))
+```
+
+
+##*Question 7*
+```{r question 7, echo=FALSE}
+
+#join tables
+data3 <- dbGetQuery(db, "
+  SELECT *
+  FROM P_SLQ
+  LEFT JOIN P_PAQ ON P_SLQ.SEQN = P_PAQ.SEQN
+  LEFT JOIN P_ALQ ON P_SLQ.SEQN = P_ALQ.SEQN
+  LEFT JOIN P_GHB ON P_SLQ.SEQN = P_GHB.SEQN
+  LEFT JOIN P_AUQ ON P_SLQ.SEQN = P_AUQ.SEQN
+")
+
+#Create functions
+
+##continuous
+clean_continuous <- function(data, var_name) {
+  lower_percentile <- quantile(data[[var_name]], 0.05, na.rm = TRUE)
+  upper_percentile <- quantile(data[[var_name]], 0.95, na.rm = TRUE)
+  
+  data[[var_name]][data[[var_name]] < lower_percentile] <- lower_percentile
+  
+  data[[var_name]][data[[var_name]] > upper_percentile] <- upper_percentile
+  
+  return(data)
+}
+
+
+#categorical
+clean_categorical <- function(data, var_name) {
+  data[[var_name]][data[[var_name]] == 99] <- 9999
+  return(data)
+}
+
+#create new data frame
+data_clean3 <- data3
+
+#create vectors
+cont_var <- c("LBXGH")
+cat_var <- c("PAQ610", "ALQ121", "AUQ054", "SLQ050")
+
+#apply functions-continuous
+
+for (var in cont_var) {
+  data_clean3 <- clean_continuous(data_clean3, var)
+}
+
+#apply functions-categorical
+for (var in cat_var) {
+  data_clean3 <- clean_categorical(data_clean3, var)
+}
+
+#display with kable
+kable(head(data_clean3[, c("PAQ610", "ALQ121", "LBXGH", "AUQ054", "SLQ050")]))
+
+```
+#*Histograms* 
+
+```{r histograms, echo=FALSE}
+#original data
+hist(data3$LBXGH, 
+     main = "Histogram of Glycohemoglobin (%) - Original Data", 
+     xlab = "Glycohemoglobin (%)", 
+     col = "steelblue", 
+     border = "orange", 
+     breaks = 20) 
+
+#cleaned data
+hist(data_clean3$LBXGH, 
+     main = "Histogram of Glycohemoglobin (%) - Cleaned Data", 
+     xlab = "Glycohemoglobin (%)", 
+     col = "aquamarine", 
+     border = "yellow", 
+     breaks = 20)
+
+#end session
+
+dbDisconnect(db)
+```
+ ### Chat GPT was used to help trouble shoot why Summarytools was not running in R. 
+
+\pagebreak  
+
+## Code Appendix  
+
+```{r, ref.label=knitr::all_labels(),echo=TRUE,eval=FALSE} 
+```
